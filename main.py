@@ -1,18 +1,18 @@
-import base64 as b64
+import base64
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 
 # ================= BASE64 =================
-def b_ec(t):
-    return b64.b64ec(t.ec()).dc()
+def base64_encode(text):
+    return base64.b64encode(text.encode()).decode()
 
-def b_dc(t):
-    return b64.b64dc(t.ec()).dc()
+def base64_decode(text):
+    return base64.b64decode(text.encode()).decode()
 
 # ================= CAESAR =================
-def caesar_encrypt(t, shift=3):
+def caesar_encrypt(text, shift=3):
     result = ""
-    for char in t:
+    for char in text:
         if char.isalpha():
             shift_base = 65 if char.isupper() else 97
             result += chr((ord(char) - shift_base + shift) % 26 + shift_base)
@@ -20,23 +20,23 @@ def caesar_encrypt(t, shift=3):
             result += char
     return result
 
-def caesar_decrypt(t, shift=3):
-    return caesar_encrypt(t, -shift)
+def caesar_decrypt(text, shift=3):
+    return caesar_encrypt(text, -shift)
 
 # ================= AES =================
 KEY = b'1234567890123456'  # 16-byte key
 
-def aes_encrypt(t):
+def aes_encrypt(text):
     cipher = AES.new(KEY, AES.MODE_CBC)
-    ct_bytes = cipher.encrypt(pad(t.ec(), AES.block_size))
-    return b64.b64ec(cipher.iv + ct_bytes).dc()
+    ct_bytes = cipher.encrypt(pad(text.encode(), AES.block_size))
+    return base64.b64encode(cipher.iv + ct_bytes).decode()
 
-def aes_decrypt(enc_t):
-    raw = b64.b64dc(enc_t)
+def aes_decrypt(enc_text):
+    raw = base64.b64decode(enc_text)
     iv = raw[:16]
     ct = raw[16:]
     cipher = AES.new(KEY, AES.MODE_CBC, iv)
-    return unpad(cipher.decrypt(ct), AES.block_size).dc()
+    return unpad(cipher.decrypt(ct), AES.block_size).decode()
 
 # ================= MAIN =================
 def main():
@@ -45,32 +45,32 @@ def main():
     print("2. Caesar Cipher")
     print("3. AES")
 
-    c = input("Enter choice (1-3): ")
-    t = input("Enter text: ")
+    choice = input("Enter choice (1-3): ")
+
+    text = input("Enter text: ")
+
     mode = input("Encode or Decode (e/d): ").lower()
 
-    if c == '1':
+    if choice == '1':
         if mode == 'e':
-            print("Encoded:", b_ec(t))
+            print("Encoded:", base64_encode(text))
         else:
-            print("Decoded:", b_dc(t))
+            print("Decoded:", base64_decode(text))
 
-    elif c == '2':
+    elif choice == '2':
         shift = int(input("Enter shift value: "))
         if mode == 'e':
-            print("Encrypted:", caesar_encrypt(t, shift))
+            print("Encrypted:", caesar_encrypt(text, shift))
         else:
-            print("Decrypted:", caesar_decrypt(t, shift))
+            print("Decrypted:", caesar_decrypt(text, shift))
 
-    elif c == '3':
+    elif choice == '3':
         if mode == 'e':
-            print("Encrypted:", aes_encrypt(t))
+            print("Encrypted:", aes_encrypt(text))
         else:
-            print("Decrypted:", aes_decrypt(t))
+            print("Decrypted:", aes_decrypt(text))
 
     else:
         print("Invalid choice!")
-
-
 
 main()
